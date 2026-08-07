@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SushReads — Curated Intelligence | वाचा, शिका, वाढा</title>
+<style>
+  :root {
+    --bg: #f0f2f5;
+    --surface: rgba(255,255,255,0.85);
+    --surface2: rgba(255,255,255,0.6);
+    --glass: rgba(255,255,255,0.7);
+    --border: rgba(0,0,0,0.06);
+    --text: #1a1a2e;
+    --text2: #555;
+    --text3: #999;
+    --accent: #6c5ce7;
+    --accent2: #a29bfe;
+    --accent-glow: rgba(108,92,231,0.3);
+    --science: #00b894;
+    --tech: #0984e3;
+    --money: #e17055;
+    --selfhelp: #fd79a8;
+    --marathi: #e84393;
+    --gradient-1: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    --gradient-2: linear-gradient(135deg, #00b894, #00cec9);
+    --gradient-3: linear-gradient(135deg, #0984e3, #74b9ff);
+    --gradient-4: linear-gradient(135deg, #e17055, #fab1a0);
+    --gradient-5: linear-gradient(135deg, #fd79a8, #fab1a0);
+    --gradient-6: linear-gradient(135deg, #e84393, #fd79a8);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-lg: 0 20px 60px rgba(0,0,0,0.1);
+    --shadow-glow: 0 0 30px var(--accent-glow);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-xs: 6px;
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    --bg: #0a0a14;
+    --surface: rgba(20,20,40,0.9);
+    --surface2: rgba(30,30,55,0.7);
+    --glass: rgba(25,25,50,0.8);
+    --border: rgba(255,255,255,0.06);
+    --text: #e8e8f0;
+    --text2: #aaa;
+    --text3: #777;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+    --shadow: 0 2px 8px rgba(0,0,0,0.4);
+    --shadow-lg: 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Noto Sans Devanagari', sans-serif;
+    background: var(--bg);
+    background-image: 
+      radial-gradient(ellipse at 20% 0%, rgba(108,92,231,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(0,184,148,0.04) 0%, transparent 50%);
+    color: var(--text);
+    min-height: 100vh;
+    transition: all var(--transition);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 28px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: all var(--transition);
+  }
+
+  .logo-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .logo-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--gradient-1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    box-shadow: var(--shadow-glow);
+    animation: pulse 3s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 20px var(--accent-glow); }
+    50% { box-shadow: 0 0 40px var(--accent-glow), 0 0 60px rgba(108,92,231,0.15); }
+  }
+
+  .logo-text { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo-text .accent { background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .logo-sub { font-size: 10px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
+
+  .search-box {
+    flex: 1;
+    max-width: 420px;
+    position: relative;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 11px 16px 11px 44px;
+    border: 2px solid var(--border);
+    border-radius: 28px;
+    font-size: 14px;
+    background: var(--surface2);
+    color: var(--text);
+    outline: none;
+    transition: all var(--transition);
+    backdrop-filter: blur(10px);
+  }
+  .search-box input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-glow);
+    background: var(--surface);
+  }
+  .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 16px; opacity: 0.5; }
+
+  .header-actions { display: flex; gap: 8px; margin-left: auto; align-items: center; }
+
+  .btn {
+    padding: 9px 18px;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+    white-space: nowrap;
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { background: var(--surface2); color: var(--text); transform: translateY(-1px); box-shadow: var(--shadow); }
+  .btn-primary { background: var(--gradient-1); color: #fff; border: none; box-shadow: var(--shadow-glow); }
+  .btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 0 40px var(--accent-glow); }
+
+  .theme-toggle {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 20px;
+    transition: all var(--transition);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .theme-toggle:hover { transform: rotate(15deg); box-shadow: var(--shadow); }
+
+  /* MAIN LAYOUT */
+  .main-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px 24px;
+    max-width: 1500px;
+    margin: 0 auto;
+    min-height: calc(100vh - 80px);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 250px;
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: sticky;
+    top: 92px;
+    height: fit-content;
+  }
+
+  .sidebar-card {
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    transition: all var(--transition);
+  }
+
+  .sidebar-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text3);
+    margin-bottom: 12px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    transition: all var(--transition);
+    position: relative;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--accent-glow); color: var(--accent); font-weight: 700; }
+
+  .nav-emoji { font-size: 16px; width: 24px; text-align: center; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--accent);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 12px;
+    min-width: 22px;
+    text-align: center;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .stat-card {
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .stat-value { font-size: 24px; font-weight: 800; }
+  .stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+  /* CONTENT AREA */
+  .content-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  /* TAG PILLS */
+  .tag-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .tag-pill {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    transition: all var(--transition);
+    white-space: nowrap;
+  }
+  .tag-pill:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+  .tag-pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tag-pill.science.active { background: var(--science); border-color: var(--science); }
+  .tag-pill.tech.active { background: var(--tech); border-color: var(--tech); }
+  .tag-pill.money.active { background: var(--money); border-color: var(--money); }
+  .tag-pill.selfhelp.active { background: var(--selfhelp); border-color: var(--selfhelp); }
+  .tag-pill.marathi.active { background: var(--marathi); border-color: var(--marathi); }
+
+  /* ARTICLE GRID */
+  .status-line {
+    font-size: 12px;
+    color: var(--text3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .article-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 14px;
+  }
+
+  .article-card {
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    cursor: pointer;
+    transition: all var(--transition);
+    position: relative;
+    overflow: hidden;
+    animation: fadeSlideIn 0.4s ease;
+  }
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .article-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent2);
+  }
+  .article-card.unread { border-left: 3px solid var(--accent); }
+
+  .card-source {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-source .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .dot.science { background: var(--science); }
+  .dot.tech { background: var(--tech); }
+  .dot.money { background: var(--money); }
+  .dot.selfhelp { background: var(--selfhelp); }
+  .dot.marathi { background: var(--marathi); }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-meta {
+    font-size: 11px;
+    color: var(--text3);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .card-actions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: all var(--transition);
+  }
+  .article-card:hover .card-actions { opacity: 1; }
+
+  .card-action-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition);
+    backdrop-filter: blur(10px);
+  }
+  .card-action-btn:hover { background: var(--surface2); transform: scale(1.1); }
+
+  /* READING PANEL (Modal) */
+  .reading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+    padding: 20px;
+  }
+  .reading-overlay.show { display: flex; }
+
+  .reading-panel {
+    background: var(--surface);
+    border-radius: var(--radius);
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 36px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    animation: fadeSlideIn 0.3s ease;
+    position: relative;
+  }
+
+  .reading-panel .close-btn {
+    position: sticky;
+    top: 0;
+    float: right;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 18px;
+    z-index: 10;
+    transition: all var(--transition);
+  }
+  .reading-panel .close-btn:hover { background: var(--surface2); }
+
+  .reading-panel .rp-category {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+  }
+  .rp-category.science { background: rgba(0,184,148,0.1); color: var(--science); }
+  .rp-category.tech { background: rgba(9,132,227,0.1); color: var(--tech); }
+  .rp-category.money { background: rgba(225,112,85,0.1); color: var(--money); }
+  .rp-category.selfhelp { background: rgba(253,121,168,0.1); color: var(--selfhelp); }
+  .rp-category.marathi { background: rgba(232,67,147,0.1); color: var(--marathi); }
+
+  .reading-panel h1 { font-size: 28px; font-weight: 800; line-height: 1.3; margin-bottom: 12px; letter-spacing: -0.3px; }
+  .reading-panel .rp-byline { font-size: 13px; color: var(--text2); margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .reading-panel .rp-body { font-size: 16px; line-height: 1.9; color: var(--text); }
+  .reading-panel .rp-body p { margin-bottom: 14px; }
+  .reading-panel .rp-body a { color: var(--accent); text-decoration: underline; }
+  .reading-panel .rp-body img { max-width: 100%; border-radius: var(--radius-sm); margin: 16px 0; }
+  .reading-panel .rp-actions { display: flex; gap: 10px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+  /* ADD FEED MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 32px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+  }
+  .modal h3 { font-size: 20px; margin-bottom: 20px; }
+  .modal label { font-size: 12px; font-weight: 700; color: var(--text2); display: block; margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .modal input, .modal select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-xs);
+    font-size: 14px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+  }
+  .modal input:focus, .modal select:focus { border-color: var(--accent); }
+  .modal .btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .article-grid { grid-template-columns: 1fr; }
+    .header { padding: 12px 16px; }
+    .main-container { padding: 12px; }
+  }
+  @media (max-width: 500px) {
+    .header-actions .btn span { display: none; }
+    .search-box { max-width: 180px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo-group">
+    <div class="logo-icon">🍣</div>
+    <div>
+      <div class="logo-text"><span class="accent">Sush</span>Reads</div>
+      <div class="logo-sub">वाचा · शिका · वाढा</div>
+    </div>
+  </div>
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Search articles..." id="searchInput">
+  </div>
+  <div class="header-actions">
+    <button class="btn" id="refreshBtn"><span>🔄</span> <span>Refresh</span></button>
+    <button class="btn" id="markAllReadBtn"><span>✓</span> <span>Mark Read</span></button>
+    <button class="btn btn-primary" id="addFeedBtn"><span>+</span> <span>Add Feed</span></button>
+    <button class="theme-toggle" id="themeToggle">🌙</button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="main-container">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-title">📊 Dashboard</div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-value" id="totalArticles">0</div><div class="stat-label">Articles</div></div>
+        <div class="stat-card"><div class="stat-value" id="unreadCount">0</div><div class="stat-label">Unread</div></div>
+      </div>
+    </div>
+    <div class="sidebar-card">
+      <div class="sidebar-title">📂 Categories</div>
+      <div class="nav-item active" data-cat="all"><span class="nav-emoji">🏠</span> All Articles<span class="nav-badge" id="badgeAll">0</span></div>
+      <div class="nav-item" data-cat="Science"><span class="nav-emoji">🧬</span> Science<span class="nav-badge" id="badgeScience">0</span></div>
+      <div class="nav-item" data-cat="Technology"><span class="nav-emoji">💻</span> Technology<span class="nav-badge" id="badgeTech">0</span></div>
+      <div class="nav-item" data-cat="Money"><span class="nav-emoji">💰</span> Money<span class="nav-badge" id="badgeMoney">0</span></div>
+      <div class="nav-item" data-cat="Self-Help"><span class="nav-emoji">🌱</span> Self-Help<span class="nav-badge" id="badgeSelfhelp">0</span></div>
+      <div class="nav-item" data-cat="Marathi"><span class="nav-emoji">🇮🇳</span> मराठी<span class="nav-badge" id="badgeMarathi">0</span></div>
+      <div class="nav-item" data-cat="starred"><span class="nav-emoji">⭐</span> Starred</div>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <div class="content-wrapper">
+    <div class="tag-pills" id="tagPills">
+      <span class="tag-pill active" data-cat="all">All</span>
+      <span class="tag-pill science" data-cat="Science">🧬 Science</span>
+      <span class="tag-pill tech" data-cat="Technology">💻 Technology</span>
+      <span class="tag-pill money" data-cat="Money">💰 Money</span>
+      <span class="tag-pill selfhelp" data-cat="Self-Help">🌱 Self-Help</span>
+      <span class="tag-pill marathi" data-cat="Marathi">🇮🇳 मराठी</span>
+    </div>
+    <div class="status-line">
+      <span id="statusText">Ready · Loading feeds...</span>
+      <span id="articleCount">0 articles</span>
+    </div>
+    <div class="article-grid" id="articleGrid"></div>
+  </div>
+</div>
+
+<!-- READING PANEL -->
+<div class="reading-overlay" id="readingOverlay">
+  <div class="reading-panel" id="readingPanel"></div>
+</div>
+
+<!-- ADD FEED MODAL -->
+<div class="modal-overlay" id="addFeedModal">
+  <div class="modal">
+    <h3>➕ Add Custom Feed</h3>
+    <label>RSS Feed URL</label>
+    <input type="url" placeholder="https://example.com/rss" id="newFeedUrl">
+    <label>Display Name</label>
+    <input type="text" placeholder="Blog Name" id="newFeedTitle">
+    <label>Category</label>
+    <select id="newFeedCategory">
+      <option>Science</option><option>Technology</option><option>Money</option>
+      <option>Self-Help</option><option>Marathi</option>
+    </select>
+    <div class="btn-row">
+      <button class="btn" id="cancelFeedBtn">Cancel</button>
+      <button class="btn btn-primary" id="saveFeedBtn">Add Feed</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// SUSHREADS v2.0 — COMPLETE APPLICATION
+// ═══════════════════════════════════════
+
+// ─── CURATED FEEDS (English + Marathi) ───
+const CURATED_FEEDS = [
+  // SCIENCE
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/all.xml', title: 'ScienceDaily', category: 'Science' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencenews.org/feed', title: 'Science News', category: 'Science' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://feeds.arstechnica.com/arstechnica/science', title: 'Ars Technica', category: 'Science' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.nasa.gov/rss/dyn/breaking_news.rss', title: 'NASA', category: 'Science' },
+  // TECHNOLOGY
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.theverge.com/rss/index.xml', title: 'The Verge', category: 'Technology' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://feeds.arstechnica.com/arstechnica/technology-lab', title: 'Ars Technica Tech', category: 'Technology' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.wired.com/feed/rss', title: 'WIRED', category: 'Technology' },
+  // MONEY
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://feeds.marketwatch.com/marketwatch/topstories', title: 'MarketWatch', category: 'Money' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.moneycontrol.com/rss/latestnews.xml', title: 'MoneyControl', category: 'Money' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms', title: 'Economic Times', category: 'Money' },
+  // SELF-HELP
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://zenhabits.net/feed', title: 'Zen Habits', category: 'Self-Help' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://fs.blog/feed', title: 'Farnam Street', category: 'Self-Help' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://jamesclear.com/feed', title: 'James Clear', category: 'Self-Help' },
+  // MARATHI NEWS & MONEY
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.loksatta.com/rss/mumbai.xml', title: 'लोकसत्ता', category: 'Marathi' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.loksatta.com/rss/business.xml', title: 'लोकसत्ता अर्थ', category: 'Marathi' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://maharashtratimes.com/rssfeed/1733143.cms', title: 'Maharashtra Times', category: 'Marathi' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.esakal.com/rss', title: 'सकाळ', category: 'Marathi' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.tv9marathi.com/rss', title: 'TV9 Marathi', category: 'Marathi' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://marathi.abplive.com/rss', title: 'ABP माझा', category: 'Marathi' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.pudhari.com/rss', title: 'पुढारी', category: 'Marathi' },
+  // MARATHI TECHNOLOGY
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://marathi.gadgetsnow.com/rss', title: 'GadgetsNow मराठी', category: 'Marathi' },
+];
+
+// ─── STATE ───
+let articles = [];
+let feeds = [];
+let activeCategory = 'all';
+let darkMode = false;
+
+function loadState() {
+  const s = localStorage.getItem('sushreads_v2');
+  if (s) {
+    const st = JSON.parse(s);
+    articles = st.articles || [];
+    feeds = st.feeds || [];
+    darkMode = st.darkMode || false;
+  }
+  if (feeds.length === 0) feeds = [...CURATED_FEEDS];
+  applyTheme();
+}
+
+function saveState() {
+  localStorage.setItem('sushreads_v2', JSON.stringify({ articles, feeds, darkMode }));
+}
+
+function applyTheme() {
+  document.body.classList.toggle('dark', darkMode);
+  document.getElementById('themeToggle').textContent = darkMode ? '☀️' : '🌙';
+}
+
+// ─── FETCH ───
+async function fetchFeed(feed) {
+  try {
+    const r = await fetch(feed.url);
+    const d = await r.json();
+    if (d.status === 'ok' && d.items) {
+      d.items.forEach(item => {
+        if (!articles.find(a => a.link === item.link)) {
+          articles.push({
+            id: Date.now() + Math.random().toString(36),
+            feedTitle: feed.title, feedUrl: feed.url, category: feed.category,
+            title: item.title, link: item.link,
+            description: item.description || '',
+            content: item.content || item.description || '',
+            author: item.author || '', pubDate: item.pubDate,
+            read: false, starred: false, thumbnail: item.thumbnail || '',
+          });
+        }
+      });
+    }
+  } catch(e) { console.warn('Fetch fail:', feed.title, e.message); }
+}
+
+async function refreshAll() {
+  document.getElementById('statusText').textContent = '🔄 Refreshing...';
+  const proms = feeds.map(f => fetchFeed(f));
+  await Promise.allSettled(proms);
+  articles.sort((a,b) => new Date(b.pubDate) - new Date(a.pubDate));
+  saveState();
+  renderAll();
+  document.getElementById('statusText').textContent = '✅ Updated ' + new Date().toLocaleTimeString();
+}
+
+// ─── FILTERING ───
+function getFiltered() {
+  let f = [...articles];
+  if (activeCategory === 'starred') f = f.filter(a => a.starred);
+  else if (activeCategory !== 'all') f = f.filter(a => a.category === activeCategory);
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (q) f = f.filter(a => a.title.toLowerCase().includes(q) || a.feedTitle.toLowerCase().includes(q) || a.description.toLowerCase().includes(q));
+  return f;
+}
+
+// ─── RENDER ───
+function renderAll() {
+  renderGrid();
+  updateCounts();
+}
+
+function renderGrid() {
+  const filtered = getFiltered();
+  const grid = document.getElementById('articleGrid');
+  document.getElementById('articleCount').textContent = filtered.length + ' articles';
+  
+  grid.innerHTML = filtered.map(a => {
+    const catClass = a.category.toLowerCase().replace('-','').replace(' ','');
+    const isMarathi = /[\u0900-\u097F]/.test(a.title);
+    return `
+    <div class="article-card ${a.read ? '' : 'unread'}" onclick="openArticle('${a.id}')">
+      <div class="card-actions">
+        <button class="card-action-btn" onclick="event.stopPropagation();toggleStar('${a.id}')" title="Star">${a.starred ? '⭐' : '☆'}</button>
+        <button class="card-action-btn" onclick="event.stopPropagation();markRead('${a.id}')" title="${a.read ? 'Unread' : 'Read'}">${a.read ? '📖' : '✓'}</button>
+      </div>
+      <div class="card-source"><span class="dot ${catClass}"></span>${a.feedTitle} ${isMarathi ? '🇮🇳' : ''}</div>
+      <div class="card-title">${a.title}</div>
+      <div class="card-meta">
+        <span>${timeAgo(a.pubDate)}</span>
+        ${a.author ? '<span>· ' + a.author + '</span>' : ''}
+        ${!a.read ? '<span style="color:var(--accent);font-weight:700;">● New</span>' : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openArticle(id) {
+  const a = articles.find(x => x.id == id);
+  if (!a) return;
+  if (!a.read) { a.read = true; saveState(); }
+  
+  const catClass = a.category.toLowerCase().replace('-','').replace(' ','');
+  const panel = document.getElementById('readingPanel');
+  panel.innerHTML = `
+    <button class="close-btn" onclick="closeReading()">✕</button>
+    <span class="rp-category ${catClass}">${a.category}</span>
+    <h1>${a.title}</h1>
+    <div class="rp-byline">
+      <strong>${a.feedTitle}</strong>
+      <span>· ${a.author || 'Unknown'}</span>
+      <span>· ${new Date(a.pubDate).toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric'})}</span>
+    </div>
+    <div class="rp-body">${a.content || a.description || '<p>No content.</p>'}</div>
+    <div class="rp-actions">
+      <button class="btn" onclick="toggleStar('${a.id}');openArticle('${a.id}')">${a.starred ? '⭐ Starred' : '☆ Star'}</button>
+      <button class="btn btn-primary" onclick="window.open('${a.link}','_blank')">🔗 Open Original</button>
+      <button class="btn" onclick="markUnread('${a.id}');closeReading()">📖 Mark Unread</button>
+    </div>
+  `;
+  document.getElementById('readingOverlay').classList.add('show');
+  renderGrid();
+  updateCounts();
+}
+
+function closeReading() { document.getElementById('readingOverlay').classList.remove('show'); }
+
+function toggleStar(id) {
+  const a = articles.find(x => x.id == id);
+  if (a) { a.starred = !a.starred; saveState(); renderGrid(); updateCounts(); }
+}
+
+function markRead(id) {
+  const a = articles.find(x => x.id == id);
+  if (a) { a.read = !a.read; saveState(); renderGrid(); updateCounts(); }
+}
+
+function markUnread(id) {
+  const a = articles.find(x => x.id == id);
+  if (a) { a.read = false; saveState(); renderGrid(); updateCounts(); }
+}
+
+function markAllRead() {
+  getFiltered().forEach(a => a.read = true);
+  saveState(); renderGrid(); updateCounts();
+}
+
+function updateCounts() {
+  document.getElementById('totalArticles').textContent = articles.length;
+  document.getElementById('unreadCount').textContent = articles.filter(a => !a.read).length;
+  document.getElementById('badgeAll').textContent = articles.length;
+  document.getElementById('badgeScience').textContent = articles.filter(a => a.category === 'Science' && !a.read).length;
+  document.getElementById('badgeTech').textContent = articles.filter(a => a.category === 'Technology' && !a.read).length;
+  document.getElementById('badgeMoney').textContent = articles.filter(a => a.category === 'Money' && !a.read).length;
+  document.getElementById('badgeSelfhelp').textContent = articles.filter(a => a.category === 'Self-Help' && !a.read).length;
+  document.getElementById('badgeMarathi').textContent = articles.filter(a => a.category === 'Marathi' && !a.read).length;
+}
+
+function timeAgo(d) {
+  const diff = Math.floor((Date.now() - new Date(d)) / 1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  if (diff < 604800) return Math.floor(diff/86400) + 'd ago';
+  return new Date(d).toLocaleDateString('en-US', {month:'short',day:'numeric'});
+}
+
+// ─── EVENT LISTENERS ───
+document.getElementById('themeToggle').onclick = () => { darkMode = !darkMode; applyTheme(); saveState(); };
+document.getElementById('refreshBtn').onclick = refreshAll;
+document.getElementById('markAllReadBtn').onclick = markAllRead;
+document.getElementById('searchInput').oninput = renderGrid;
+
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.onclick = function() {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    this.classList.add('active');
+    activeCategory = this.dataset.cat;
+    document.querySelectorAll('.tag-pill').forEach(p => p.classList.remove('active'));
+    const pill = document.querySelector(`.tag-pill[data-cat="${activeCategory}"]`);
+    if (pill) pill.classList.add('active');
+    renderAll();
+  };
+});
+
+document.querySelectorAll('.tag-pill').forEach(el => {
+  el.onclick = function() {
+    document.querySelectorAll('.tag-pill').forEach(p => p.classList.remove('active'));
+    this.classList.add('active');
+    activeCategory = this.dataset.cat;
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    const nav = document.querySelector(`.nav-item[data-cat="${activeCategory}"]`);
+    if (nav) nav.classList.add('active');
+    renderAll();
+  };
+});
+
+document.getElementById('addFeedBtn').onclick = () => document.getElementById('addFeedModal').classList.add('show');
+document.getElementById('cancelFeedBtn').onclick = () => document.getElementById('addFeedModal').classList.remove('show');
+document.getElementById('saveFeedBtn').onclick = () => {
+  const url = document.getElementById('newFeedUrl').value.trim();
+  const title = document.getElementById('newFeedTitle').value.trim();
+  const cat = document.getElementById('newFeedCategory').value;
+  if (url && title) {
+    feeds.push({ url: `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`, title, category: cat });
+    saveState();
+    document.getElementById('addFeedModal').classList.remove('show');
+    document.getElementById('newFeedUrl').value = '';
+    document.getElementById('newFeedTitle').value = '';
+    refreshAll();
+  }
+};
+document.getElementById('addFeedModal').onclick = function(e) { if (e.target === this) this.classList.remove('show'); };
+document.getElementById('readingOverlay').onclick = function(e) { if (e.target === this) closeReading(); };
+document.onkeydown = function(e) { if (e.key === 'Escape') closeReading(); };
+
+// ─── INIT ───
+loadState();
+renderAll();
+refreshAll();
+setInterval(refreshAll, 30 * 60 * 1000); // Refresh every 30 min
+
+console.log('🍣 SushReads v2.0 — वाचा, शिका, वाढा');
+</script>
+</body>
+</html>

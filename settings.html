@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TradeWise — Settings</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2d;--panel2:#17223a;--text:#edf2f7;--muted:#94a3b8;--border:#263552;--accent:#4f8cff;--danger:#ef4444}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{padding:22px 26px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:15px}
+main{max-width:1050px;margin:auto;padding:24px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px}h1,h2{margin:0}h1{font-size:21px}h2{font-size:16px;margin-bottom:15px}
+.row{display:grid;grid-template-columns:1fr 180px;gap:14px;align-items:center;padding:11px 0;border-bottom:1px solid #ffffff12}.row:last-child{border:0}
+label{font-weight:600}.hint,.note{display:block;color:var(--muted);font-size:12px;margin-top:3px;line-height:1.5}
+input,select,button{font:inherit}input,select{width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:10px}
+button{border:0;border-radius:8px;padding:10px 14px;background:var(--accent);color:white;cursor:pointer;font-weight:600}.secondary{background:var(--panel2);border:1px solid var(--border)}.danger{background:var(--danger)}
+.actions{display:flex;gap:10px;flex-wrap:wrap}.status{color:#22c55e;min-height:20px;margin-top:12px}
+.results{max-height:330px;overflow:auto;border:1px solid var(--border);border-radius:10px}.result{display:flex;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid #ffffff12}.result:last-child{border:0}
+.symbol{font-weight:700}.badge{font-size:11px;border:1px solid var(--border);padding:4px 7px;border-radius:999px;color:var(--muted);white-space:nowrap}
+.search{margin-bottom:12px}@media(max-width:720px){.grid{grid-template-columns:1fr}.row{grid-template-columns:1fr}header{flex-direction:column;align-items:flex-start}main{padding:15px}.actions button{width:100%}}
+</style>
+</head>
+<body>
+<header><div><h1>TradeWise — Settings</h1><span class="hint">Preferences, data controls and market-data configuration</span></div>
+<button class="secondary" onclick="window.location.href='index.html'">Back to TradeWise</button>
+</header>
+<main><div class="grid">
+	
+
+<section class="card"><h2>General Preferences</h2>
+<div class="row"><div><label>Default currency</label><span class="hint">Money display and calculator default.</span></div><select id="currency"><option value="INR">₹ INR — Indian Rupee</option><option value="USD">$ USD — US Dollar</option><option value="EUR">€ EUR — Euro</option><option value="GBP">£ GBP — Pound Sterling</option></select></div>
+<div class="row"><div><label>Default risk %</label><span class="hint">Default risk percentage for position sizing.</span></div><input id="risk" type="number" min="0" max="100" step=".1"></div>
+<div class="row"><div><label>Default trading capital</label><span class="hint">Starting capital for calculator defaults.</span></div><input id="capital" type="number" min="0" step="1000"></div>
+<div class="row"><div><label>Position-size mode</label></div><select id="positionMode"><option value="risk">Risk-based</option><option value="fixed">Fixed quantity</option></select></div>
+<div class="row"><div><label>Trading session</label></div><select id="session"><option>Intraday</option><option>Morning</option><option>Midday</option><option>Afternoon</option></select></div>
+</section>
+
+<section class="card"><h2>Dashboard & Display</h2>
+<div class="row"><div><label>Market refresh interval</label><span class="hint">Used by the future quote adapter.</span></div><select id="refresh"><option value="5">5 seconds</option><option value="10">10 seconds</option><option value="15">15 seconds</option><option value="30">30 seconds</option><option value="60">60 seconds</option></select></div>
+<div class="row"><div><label>Theme</label></div><select id="theme"><option value="dark">Dark</option><option value="light">Light</option><option value="system">System</option></select></div>
+<div class="row"><div><label>Market panel</label></div><select id="showMarketPanel"><option value="yes">Show</option><option value="no">Hide</option></select></div>
+<div class="row"><div><label>Auto-save journal</label></div><select id="autoSave"><option value="yes">Enabled</option><option value="no">Disabled</option></select></div>
+</section>
+
+<section class="card"><h2>Market Data</h2>
+<div class="row"><div><label>Quote provider</label><span class="hint">Initial display/test adapter.</span></div><select id="provider"><option value="yahoo">Yahoo Finance</option><option value="manual">Manual / Offline</option></select></div>
+<div class="row"><div><label>Dashboard indices</label><span class="hint">Planned upper-right market panel.</span></div><div class="badge">NIFTY 50 · BANKNIFTY · SENSEX</div></div>
+<p class="note">Yahoo Finance should be treated as a non-guaranteed quote source. For production exchange-real-time NSE/BSE data, use an appropriate licensed market-data provider.</p>
+</section>
+
+<section class="card"><h2>Data Management</h2>
+<div class="actions"><button onclick="exportSettings()">Export Settings</button><button class="secondary" onclick="document.getElementById('file').click()">Import Settings</button><button class="danger"
+
+="resetSettings()">Reset Settings</button></div>
+<input id="file" type="file" accept=".json,application/json" hidden onchange="importSettings(event)">
+<div id="status" class="status"></div><p class="note">Settings are saved locally under the TradeWise settings key.</p>
+</section>
+
+
+<section class="card" style="grid-column:1/-1">
+<h2>Application Information</h2>
+<div class="row"><div><label>Application</label><span class="hint">Current TradeWise application.</span></div><div class="badge">TradeWise v2.0</div></div>
+<div class="row"><div><label>Storage mode</label><span class="hint">Settings are stored locally in this browser.</span></div><div class="badge">Local Storage</div></div>
+<div class="row"><div><label>Connection mode</label><span class="hint">Local features remain available offline.</span></div><div class="badge">Offline Ready</div></div>
+</section>
+
+</div></main>
+<script>
+const KEY="tradePilotSettings";
+const defaults={currency:"INR",risk:"1",capital:"100000",positionMode:"risk",session:"Intraday",refresh:"15",theme:"system",showMarketPanel:"yes",autoSave:"yes",provider:"yahoo",defaultRewardRatio:"2",defaultPositionDirection:"LONG",decimalPlaces:"2",confirmDelete:true,confirmClearData:true,compactMode:false,soundNotifications:false,rememberLastSymbol:true};
+function esc(v){return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function load(){let x={};try{x=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){};x={...defaults,...x};document.getElementById("currency").value=x.currency||"INR";document.getElementById("risk").value=x.defaultRiskPercent??x.risk??1;document.getElementById("capital").value=x.capital??100000;document.getElementById("positionMode").value=x.positionMode||"risk";document.getElementById("session").value=x.session||"Intraday";document.getElementById("refresh").value=x.refresh||"15";document.getElementById("theme").value=x.theme||"system";document.getElementById("showMarketPanel").value=x.showMarketPanel||"yes";document.getElementById("autoSave").value=x.autoSave===false?"no":"yes";document.getElementById("provider").value=x.provider||"yahoo"}
+function save(){let current={};try{current=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){};let x={...current};x.currency=document.getElementById("currency").value;x.defaultRiskPercent=Number(document.getElementById("risk").value);x.theme=document.getElementById("theme").value;x.autoSave=document.getElementById("autoSave").value==="yes";x.capital=Number(document.getElementById("capital").value);x.positionMode=document.getElementById("positionMode").value;x.session=document.getElementById("session").value;x.refresh=document.getElementById("refresh").value;x.showMarketPanel=document.getElementById("showMarketPanel").value;x.provider=document.getElementById("provider").value;localStorage.setItem(KEY,JSON.stringify(x));status("Settings saved.")}
+function status(t){const e=document.getElementById("status");e.textContent=t;setTimeout(()=>e.textContent="",1800)}
+Object.keys(defaults).forEach(k=>{const el=document.getElementById(k);if(el)el.addEventListener("change",save)});
+function exportSettings(){const b=new Blob([localStorage.getItem(KEY)||JSON.stringify(defaults)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="tradewise-settings.json";a.click();URL.revokeObjectURL(a.href)}
+function importSettings(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{localStorage.setItem(KEY,JSON.stringify({...defaults,...JSON.parse(r.result)}));load();status("Settings imported.")}catch(x){status("Invalid settings file.")}};r.readAsText(f)}
+function resetSettings(){if(confirm("Reset all TradeWise settings?")){localStorage.setItem(KEY,JSON.stringify(defaults));load();status("Settings reset.")}}
+load();
+</script>
+</body></html>
