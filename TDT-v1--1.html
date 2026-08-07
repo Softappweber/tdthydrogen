@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TDT · Trading Decision Platform</title>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* ==========================================================
+           TDT DEEP GLASS DARK THEME
+           ========================================================== */
+        :root {
+            --bg: #080b1a;
+            --card: #101530;
+            --sub: #1e2345;
+            --border: rgba(255,255,255,0.06);
+            --primary: #3b82f6;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --text: #e2e8f0;
+            --textMuted: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+        /* ============ LOGIN SCREEN (Hidden when logged in) ============ */
+        #loginWrapper {
+            position: fixed; inset: 0; z-index: 999;
+            display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(circle at 50% 10%, #101530 0%, #080b1a 100%);
+        }
+        .login-box {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 48px; width: 100%; max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8); text-align: center;
+        }
+        .login-box h2 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+        .login-box p { color: var(--textMuted); font-size: 14px; margin-bottom: 24px; }
+        .login-box input {
+            width: 100%; padding: 14px 16px; margin-bottom: 14px;
+            background: #0a0d1e; border: 1px solid var(--sub); border-radius: 12px;
+            color: #fff; font-size: 14px; outline: none; transition: 0.2s;
+        }
+        .login-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+        .login-box button {
+            width: 100%; padding: 14px; background: var(--primary); border: none;
+            border-radius: 12px; color: #fff; font-weight: 600; font-size: 16px;
+            cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(59,130,246,0.2);
+        }
+        .login-box button:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(59,130,246,0.3); }
+        #supaResult { margin-top: 14px; padding: 12px; border-radius: 10px; font-size: 13px; background: #0a0d1e; border: 1px solid var(--sub); text-align: left; min-height: 40px; }
+
+
+        /* ==========================================================
+           TDT COMMAND CENTER — VISUAL MASTER
+           Built to match the supplied TDT dashboard reference.
+        ========================================================== */
+        #dashboardWrapper{
+            display:none;
+            height:100vh;
+            width:100vw;
+            overflow:hidden;
+        }
+
+        .app-container{
+            display:grid;
+            grid-template-columns:245px minmax(0,1fr) 320px;
+            height:100vh;
+            background:
+                radial-gradient(circle at 55% 15%,rgba(31,70,140,.16),transparent 35%),
+                var(--bg);
+        }
+
+        /* LEFT NAV */
+        .left-sidebar{
+            background:rgba(7,16,35,.96);
+            border-right:1px solid rgba(255,255,255,.07);
+            display:flex;
+            flex-direction:column;
+            padding:18px 12px;
+            min-width:0;
+            overflow-y:auto;
+        }
+        .brand{
+            height:48px;
+            display:flex;
+            align-items:center;
+            gap:10px;
+            padding:0 12px 18px;
+            margin-bottom:8px;
+            border-bottom:1px solid rgba(255,255,255,.05);
+        }
+        .brand-mark{
+            color:#19d7d1;
+            font-size:25px;
+            font-weight:900;
+            letter-spacing:-2px;
+        }
+        .brand-name{font-size:22px;font-weight:600;letter-spacing:-.6px}
+        .brand-menu{margin-left:auto;color:#94a3b8;font-size:18px}
+        .nav-section{display:flex;flex-direction:column;gap:3px;margin-top:8px}
+        .nav-item{
+            min-height:40px;
+            display:flex;
+            align-items:center;
+            gap:13px;
+            padding:9px 12px;
+            color:#aab6ca;
+            border-radius:8px;
+            font-size:13px;
+            cursor:pointer;
+            transition:.18s ease;
+            border:1px solid transparent;
+        }
+        .nav-item i{width:17px;text-align:center;font-size:14px}
+        .nav-item:hover{background:rgba(59,130,246,.09);color:#fff}
+        .nav-item.active{
+            color:#fff;
+            background:linear-gradient(90deg,rgba(37,99,235,.40),rgba(37,99,235,.16));
+            border-color:rgba(59,130,246,.38);
+            box-shadow:inset -3px 0 #4f8cff;
+        }
+        .nav-spacer{flex:1}
+        .subscription-card{
+            margin-top:14px;
+            padding:15px 14px;
+            border-radius:10px;
+            background:linear-gradient(145deg,#0f1b35,#0a1327);
+            border:1px solid rgba(255,255,255,.07);
+        }
+        .subscription-card .tiny{font-size:11px;color:#7786a0}
+        .subscription-card .plan{
+            display:flex;justify-content:space-between;align-items:center;
+            margin:8px 0 14px;font-weight:700;font-size:14px;
+        }
+        .status-pill{
+            padding:4px 8px;border-radius:8px;background:rgba(16,185,129,.12);
+            color:#26d99b;font-size:11px;font-weight:700;
+        }
+        .subscription-card .expiry{font-size:12px;color:#c7d0df;line-height:1.55}
+        .subscription-card .expiry span{float:right;color:#eef2f8}
+
+        /* CENTER */
+        .main-area{
+            min-width:0;
+            display:flex;
+            flex-direction:column;
+            overflow-y:auto;
+            overflow-x:hidden;
+            padding:16px 14px 14px;
+            scrollbar-gutter:stable;
+        }
+        .top-header{
+            display:flex;
+            align-items:center;
+            gap:16px;
+            margin-bottom:12px;
+            min-height:44px;
+        }
+        .mobile-menu{
+            display:none;background:#111c35;border:1px solid var(--border);
+            color:#fff;border-radius:8px;padding:8px 10px;cursor:pointer
+        }
+        .search-box{
+            flex:1;max-width:430px;margin:auto;
+            height:38px;display:flex;align-items:center;gap:10px;
+            background:#101b32;border:1px solid rgba(255,255,255,.07);
+            border-radius:8px;padding:0 14px;color:#6f7e97;
+        }
+        .search-box input{
+            flex:1;background:none;border:0;outline:0;color:#e2e8f0;font-size:12px;
+        }
+        .search-box input::placeholder{color:#65728a}
+        .header-actions{display:flex;align-items:center;gap:12px}
+        .new-analysis{
+            border:0;border-radius:7px;padding:10px 15px;
+            background:linear-gradient(135deg,#3b82f6,#6945e9);
+            color:#fff;font-size:12px;font-weight:700;cursor:pointer;
+            box-shadow:0 7px 18px rgba(59,130,246,.18);
+        }
+        .notification{position:relative;color:#cbd5e1;font-size:17px}
+        .notification b{
+            position:absolute;top:-8px;right:-8px;width:16px;height:16px;
+            display:grid;place-items:center;border-radius:50%;font-size:9px;
+            background:#ef4444;color:#fff
+        }
+        .user-area{display:flex;align-items:center;gap:9px}
+        .user-meta{text-align:right}
+        .user-meta strong{display:block;font-size:12px}
+        .basic-badge{display:inline-block;margin-top:3px;padding:2px 6px;border-radius:4px;background:#111f47;color:#7ca4ff;font-size:9px;border:1px solid #263d80}
+        .user-avatar{
+            width:32px;height:32px;border-radius:50%;display:grid;place-items:center;
+            background:linear-gradient(135deg,#a8a2cc,#635e8c);color:#fff;font-weight:700
+        }
+
+        .section-heading{
+            display:flex;align-items:center;justify-content:space-between;
+            margin:0 2px 8px
+        }
+        .section-heading h2{font-size:13px;font-weight:700}
+        .section-heading h2 span{color:#1be39d;font-size:10px}
+        .section-heading a{font-size:11px;color:#6f9dff;cursor:pointer}
+
+        .market-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+        .market-card{
+            min-width:0;height:96px;padding:12px 13px;border-radius:9px;
+            background:linear-gradient(145deg,#10203d,#0d1830);
+            border:1px solid rgba(255,255,255,.07);position:relative;overflow:hidden
+        }
+        .market-card .label{font-size:11px;color:#dbe4f2;font-weight:600}
+        .market-card .price{font-size:18px;font-weight:700;margin:12px 0 4px}
+        .market-card .change{font-size:11px;font-weight:600}
+        .up{color:#16d895}.down{color:#ff5a62}
+        .sparkline{
+            position:absolute;right:0;bottom:0;width:45%;height:65%;
+            opacity:.9
+        }
+        .sparkline svg{width:100%;height:100%}
+
+        .dashboard-grid{
+            display:grid;
+            grid-template-columns:minmax(210px,.78fr) minmax(360px,1.5fr);
+            gap:12px;
+            align-items:stretch;
+        }
+
+        /* WATCHLIST */
+        .panel{
+            background:linear-gradient(145deg,#0d1b34,#0b172d);
+            border:1px solid rgba(255,255,255,.06);
+            border-radius:9px;
+            box-shadow:0 8px 25px rgba(0,0,0,.12);
+        }
+        .panel-head{
+            display:flex;align-items:center;justify-content:space-between;
+            padding:13px 14px;border-bottom:1px solid rgba(255,255,255,.06)
+        }
+        .panel-head h3{font-size:13px}
+        .panel-head a{font-size:10px;color:#6f9dff}
+        .watch-table{width:100%;border-collapse:collapse;font-size:10px}
+        .watch-table th{color:#71819b;font-weight:500;text-align:left;padding:9px 12px}
+        .watch-table th:not(:first-child),.watch-table td:not(:first-child){text-align:right}
+        .watch-table td{padding:10px 12px;border-top:1px solid rgba(255,255,255,.045);color:#dce4f1}
+        .watch-table td:first-child{font-weight:600}
+        .watch-footer{padding:11px 14px;text-align:right;font-size:10px;color:#6f9dff}
+
+        /* DECISION ENGINE */
+        .decision-panel{
+            border:1px solid #315fc0;
+            background:linear-gradient(145deg,#0e2344,#0c1933);
+            border-radius:9px;
+            overflow:hidden;
+            box-shadow:0 0 0 1px rgba(59,130,246,.06),0 12px 35px rgba(0,0,0,.16)
+        }
+        .decision-head{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center}
+        .decision-head h2{font-size:16px}.decision-head p{font-size:10px;color:#8795aa;margin-top:4px}
+        .analyze-btn{border:0;background:linear-gradient(135deg,#4b83ff,#7047e9);color:#fff;border-radius:6px;padding:9px 13px;font-size:10px;font-weight:700;cursor:pointer}
+        .decision-body{display:grid;grid-template-columns:1fr 1.18fr;gap:15px;padding:13px 16px}
+        .setup-title{font-size:11px;font-weight:700;margin-bottom:9px}
+        .setup-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:10px}
+        .setup-row span:first-child{color:#8795aa}.setup-row span:last-child{font-weight:600}
+        .summary{border-left:1px solid rgba(255,255,255,.06);padding-left:15px}
+        .summary-title{font-size:12px;font-weight:700;margin-bottom:7px}
+        .summary-content{display:grid;grid-template-columns:125px 1fr;gap:14px;align-items:center}
+        .score-wrap{display:flex;flex-direction:column;align-items:center}
+        .score-ring{width:104px;height:104px;border-radius:50%;background:conic-gradient(#19d88e 0 78%,#14284a 78% 100%);display:grid;place-items:center}
+        .score-inner{width:84px;height:84px;border-radius:50%;background:#0c1933;display:flex;flex-direction:column;align-items:center;justify-content:center}
+        .score-num{font-size:25px;font-weight:800}.score-sub{font-size:9px;color:#8492a8}
+        .decision-tag{font-size:9px;color:#1ee39d;margin-top:6px;font-weight:800}
+        .decision-copy{font-size:10px;color:#aab5c8;text-align:center;margin-top:4px}
+        .metric-list{display:flex;flex-direction:column;gap:9px}
+        .metric{display:flex;justify-content:space-between;font-size:10px}.metric span:first-child{color:#8492a8}
+        .metric strong{font-weight:600}
+        .decision-footer{
+            margin:0 12px 12px;padding:11px 13px;border-radius:8px;
+            background:linear-gradient(90deg,rgba(16,185,129,.20),rgba(16,185,129,.07));
+            border:1px solid rgba(16,185,129,.22);
+            display:flex;align-items:center;justify-content:space-between
+        }
+        .decision-footer h4{font-size:12px;color:#20e09a}.decision-footer span{font-size:9px;color:#9aa8bb}
+
+        /* LOWER CENTER */
+        .lower-grid{display:grid;grid-template-columns:1fr 1.25fr;gap:12px;margin-top:12px}
+        .insight-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:12px}
+        .insight{
+            min-height:105px;padding:10px 8px;border-radius:8px;background:rgba(7,15,32,.55);
+            border:1px solid rgba(255,255,255,.05)
+        }
+        .insight-icon{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#20194d;color:#8f62ff;margin-bottom:9px}
+        .insight:nth-child(2) .insight-icon{background:#4a1b2c;color:#ff5260}
+        .insight:nth-child(3) .insight-icon{background:#4a3b14;color:#f2c33d}
+        .insight:nth-child(4) .insight-icon{background:#123456;color:#45a6ff}
+        .insight small{display:block;color:#8997aa;font-size:8px}.insight strong{display:block;font-size:11px;margin:4px 0}.insight em{font-style:normal;font-size:9px}
+        .performance{padding:12px}
+        .performance-body{display:grid;grid-template-columns:1fr 125px;gap:10px}
+        .chart-box{height:180px;position:relative}
+        .chart-box svg{width:100%;height:100%}
+        .perf-stats{display:flex;flex-direction:column;gap:11px;padding-top:5px}.perf-stat span{display:block;color:#7f8da4;font-size:9px}.perf-stat strong{font-size:11px}.perf-stat em{font-size:9px;color:#17d994;font-style:normal;margin-left:4px}
+
+        .quote{
+            margin-top:12px;padding:13px 18px;border-radius:8px;
+            background:#0d1a31;border:1px solid rgba(255,255,255,.05);
+            color:#c7d0df;font-size:11px;display:flex;align-items:center;justify-content:space-between
+        }
+        .quote .brand-line{color:#18d8dc;font-size:12px}
+
+        /* RIGHT SIDEBAR */
+        .right-sidebar{
+            background:rgba(7,16,35,.96);
+            border-left:1px solid rgba(255,255,255,.07);
+            padding:14px 10px;
+            overflow-y:auto;
+            display:flex;flex-direction:column;gap:10px;
+        }
+        .right-card{
+            background:linear-gradient(145deg,#0e1b34,#0a152a);
+            border:1px solid rgba(255,255,255,.06);
+            border-radius:9px;padding:13px
+        }
+        .right-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+        .right-head h3{font-size:11px}.right-head a{font-size:9px;color:#6f9dff}
+        .prep-wrap{display:flex;gap:14px;align-items:center}
+        .prep-ring{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#2aaeea 0 70%,#152b4a 70% 100%);flex:0 0 auto}
+        .prep-ring:before{content:"";position:absolute}
+        .prep-ring-inner{width:57px;height:57px;border-radius:50%;background:#0b172d;display:grid;place-items:center;font-size:15px;font-weight:700}
+        .prep-copy{font-size:9px;line-height:1.7;color:#d7dfeb}.prep-copy div{display:flex;align-items:center;gap:5px}.prep-copy i{font-size:9px}.done{color:#17d994}.pending{color:#78869b}
+        .news-item{display:flex;gap:9px;padding:8px 0;border-top:1px solid rgba(255,255,255,.05)}
+        .news-item:first-of-type{border-top:0}
+        .news-thumb{width:46px;height:42px;border-radius:6px;flex:0 0 auto;background:linear-gradient(135deg,#31506f,#162b47);display:grid;place-items:center;color:#9fb4ce}
+        .news-content{min-width:0}.news-content .source{font-size:8px;color:#d5a735}.news-content p{font-size:9px;line-height:1.35;margin:3px 0;color:#e0e7f1}.news-content span{font-size:8px;color:#718099}
+        .task{display:flex;gap:8px;align-items:center;padding:5px 0;font-size:9px;color:#b9c4d5}.task input{accent-color:#16d995}
+        .journal-item{padding:8px 0;border-top:1px solid rgba(255,255,255,.05);font-size:9px}.journal-item:first-of-type{border-top:0}.journal-date{color:#78869b;margin-bottom:4px}.journal-title{display:flex;justify-content:space-between;gap:8px}.journal-pnl{color:#17d994;font-weight:700}
+
+        /* RESPONSIVE */
+        @media(max-width:1250px){
+            .app-container{grid-template-columns:220px minmax(0,1fr)}
+            .right-sidebar{display:none}
+        }
+        @media(max-width:900px){
+            body{overflow:auto}
+            #dashboardWrapper{height:auto;min-height:100vh;overflow:visible}
+            .app-container{display:block;height:auto;min-height:100vh}
+            .left-sidebar{position:fixed;left:-250px;top:0;bottom:0;width:245px;z-index:100;transition:.25s;box-shadow:15px 0 35px rgba(0,0,0,.5)}
+            .left-sidebar.open{left:0}
+            .mobile-menu{display:block}
+            .main-area{min-height:100vh;padding:12px}
+            .market-grid{grid-template-columns:repeat(2,1fr)}
+            .dashboard-grid,.lower-grid{grid-template-columns:1fr}
+        }
+        @media(max-width:600px){
+            .top-header{gap:8px}.search-box{display:none}.header-actions{margin-left:auto}
+            .new-analysis{padding:9px 10px}.user-meta{display:none}
+            .market-grid{grid-template-columns:1fr 1fr}
+            .decision-body{grid-template-columns:1fr}.summary{border-left:0;border-top:1px solid rgba(255,255,255,.06);padding:12px 0 0}
+            .insight-grid{grid-template-columns:1fr 1fr}
+            .performance-body{grid-template-columns:1fr}
+            .chart-box{height:150px}
+            .quote{font-size:9px}
+        }
+    </style>
+
+<style id="tradewise-trial-lead-css">
+#twTrialGate{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(3,8,20,.88);backdrop-filter:blur(12px)}
+#twTrialCard{width:min(430px,100%);box-sizing:border-box;padding:28px;border-radius:18px;background:#0d1a31;border:1px solid rgba(80,130,255,.3);box-shadow:0 24px 70px rgba(0,0,0,.5)}
+#twTrialCard h2{margin:10px 0 8px;color:#fff;font-size:24px}
+#twTrialCard p{color:#9aa9c0;font-size:13px;line-height:1.55}
+#twTrialCard input{width:100%;box-sizing:border-box;margin:6px 0;padding:12px;border-radius:9px;border:1px solid #29405f;background:#071225;color:#fff}
+#twTrialCard button{width:100%;margin-top:9px;padding:12px;border:0;border-radius:9px;background:linear-gradient(135deg,#3b82f6,#7047e9);color:#fff;font-weight:700;cursor:pointer}
+#twTrialBadge{display:inline-block;padding:4px 8px;border-radius:7px;background:rgba(59,130,246,.12);color:#60a5fa;font-size:10px;font-weight:700}
+</style>
+
+
+<style id="tradewise-final-auth-css">
+.tw-auth-box{width:min(420px,calc(100% - 32px))!important}
+.tw-auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:16px 0 12px}
+.tw-auth-tab{padding:9px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:#0c1428;color:#9aa9c0;cursor:pointer}
+.tw-auth-tab.active{background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.45);color:#fff}
+.tw-auth-form{display:flex;flex-direction:column;gap:8px}
+.tw-auth-form input{box-sizing:border-box}
+.tw-link-btn{background:transparent!important;border:0!important;color:#73a8ff!important;padding:5px!important;cursor:pointer}
+.tw-auth-result{min-height:22px;margin-top:10px;color:#a9b7ca;font-size:12px;line-height:1.5}
+.tw-small-note{font-size:10px;color:#7f8da4;line-height:1.45;margin-top:3px}
+ .tw-auth-error{color:#ff8e8e}.tw-auth-ok{color:#55ddb0}
+.tw-email-confirm{display:none;text-align:center;padding:8px 2px 2px}
+.tw-email-confirm .tw-confirm-icon{width:64px;height:64px;margin:2px auto 16px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.28);color:#55ddb0;font-size:30px;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.tw-email-confirm h3{margin:0 0 10px;color:#fff;font-size:24px;letter-spacing:-.3px}
+.tw-email-confirm p{margin:7px 0;color:#9aa9c0;font-size:13px;line-height:1.6}
+.tw-confirm-email{display:block;margin:14px 0;padding:11px 12px;border-radius:10px;background:#071225;border:1px solid rgba(80,130,255,.22);color:#fff;font-size:13px;word-break:break-word}
+.tw-email-confirm .tw-confirm-note{font-size:12px;color:#7f8da4;margin-top:12px}
+.tw-email-confirm button{width:100%;margin-top:16px;padding:12px;border:0;border-radius:9px;background:linear-gradient(135deg,#3b82f6,#7047e9);color:#fff;font-weight:700;cursor:pointer;transition:.2s}
+.tw-email-confirm button:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(59,130,246,.22)}
+</style>
+
+</head>
+<body>
+
+
+
+    <!-- ============================================================
+    LOGIN LAYER
+    ============================================================ -->
+    
+<!-- ============================================================
+     TDT FINAL AUTHENTICATION + 3-DAY TRIAL
+============================================================ -->
+<div id="loginWrapper">
+  <div class="login-box tw-auth-box">
+    <div style="font-size:32px;margin-bottom:12px;color:var(--primary);">📊</div>
+    <h2>TDT</h2>
+    <p id="twAuthSubtitle">Think before you trade.</p>
+
+    <div class="tw-auth-tabs">
+      <button type="button" class="tw-auth-tab active" data-auth-view="login">Login</button>
+      <button type="button" class="tw-auth-tab" data-auth-view="register">3-Day Free Trial</button>
+    </div>
+
+    <form id="twLoginForm" class="tw-auth-form">
+      <input id="supaEmail" type="email" placeholder="Email address" autocomplete="email" required>
+      <input id="supaPassword" type="password" placeholder="Password" autocomplete="current-password" required>
+      <button type="submit" id="supaLoginBtn">Login</button>
+      <button type="button" class="tw-link-btn" id="twForgotBtn">Forgot password?</button>
+    </form>
+
+    <form id="twRegisterForm" class="tw-auth-form" style="display:none">
+      <input id="twRegName" type="text" placeholder="Full name" autocomplete="name" required>
+      <input id="twRegEmail" type="email" placeholder="Email address" autocomplete="email" required>
+      <input id="twRegPassword" type="password" placeholder="Create password (min. 6 characters)" autocomplete="new-password" minlength="6" required>
+      <input id="twRegPassword2" type="password" placeholder="Confirm password" autocomplete="new-password" minlength="6" required>
+      <button type="submit">Start 3-Day Free Trial →</button>
+      <div class="tw-small-note">No payment required. Email verification may be required before first login.</div>
+    </form>
+
+    <form id="twForgotForm" class="tw-auth-form" style="display:none">
+      <input id="twForgotEmail" type="email" placeholder="Email address" autocomplete="email" required>
+      <button type="submit" id="twSendResetBtn">Send Reset Link</button>
+      <button type="button" class="tw-link-btn" data-back-login>← Back to login</button>
+    </form>
+
+    <div id="twForgotConfirmation" class="tw-email-confirm" aria-live="polite">
+      <div class="tw-confirm-icon">✓</div>
+      <h3>Check Your Email</h3>
+      <p>We've sent a password reset link to:</p>
+      <span id="twForgotConfirmationEmail" class="tw-confirm-email"></span>
+      <p>Open the email and follow the link to create a new TDT password.</p>
+      <p class="tw-confirm-note">Didn't receive it? Check your spam or promotions folder.</p>
+      <button type="button" id="twForgotOpenLoginBtn">Back to Login</button>
+    </div>
+
+    <form id="twResetForm" class="tw-auth-form" style="display:none">
+      <input id="twNewPassword" type="password" placeholder="New password" autocomplete="new-password" minlength="6" required>
+      <input id="twNewPassword2" type="password" placeholder="Confirm new password" autocomplete="new-password" minlength="6" required>
+      <button type="submit">Update Password</button>
+    </form>
+
+    <div id="twEmailConfirmation" class="tw-email-confirm" aria-live="polite">
+      <div class="tw-confirm-icon">✓</div>
+      <h3>Check Your Email</h3>
+      <p>Your account has been created successfully.</p>
+      <span id="twConfirmationEmail" class="tw-confirm-email"></span>
+      <p>Please confirm your email to activate your account and start your <strong style="color:#fff">3-Day Free Trial</strong>.</p>
+      <p class="tw-confirm-note">Didn't receive it? Check your spam or promotions folder.</p>
+      <button type="button" id="twOpenLoginBtn">Open Login</button>
+    </div>
+
+    <div id="supaResult" class="tw-auth-result"></div>
+  </div>
+</div>
+
+    <!-- ============================================================
+         TDT COMMAND CENTER
+    ============================================================ -->
+    <div id="dashboardWrapper">
+        <div class="app-container">
+
+            <aside class="left-sidebar" id="leftSidebar">
+                <div class="brand">
+                    <div class="brand-mark">Tw</div>
+                    <div class="brand-name">TDT</div>
+                    <div class="brand-menu"><i class="fa-solid fa-bars"></i></div>
+                </div>
+
+                <nav class="nav-section">
+                    <div class="nav-item active" data-section="dashboard"><i class="fa-solid fa-house"></i><span>Command Center</span></div>
+                    <div class="nav-item" data-section="decision"><i class="fa-solid fa-sliders"></i><span>Trade Decision Engine</span></div>
+                    <div class="nav-item" data-section="position"><i class="fa-solid fa-arrows-up-down"></i><span>Position Sizing</span></div>
+                    <div class="nav-item" data-section="rr"><i class="fa-solid fa-scale-balanced"></i><span>Risk : Reward</span></div>
+                    <div class="nav-item" data-section="quality"><i class="fa-solid fa-shield-heart"></i><span>Trade Quality Analyzer</span></div>
+                    <div class="nav-item" data-section="discipline"><i class="fa-solid fa-person-running"></i><span>Risk Discipline Score</span></div>
+                    <div class="nav-item" data-section="premarket"><i class="fa-solid fa-clipboard-check"></i><span>Pre-Market Prep</span></div>
+                    <div class="nav-item" data-section="market"><i class="fa-solid fa-chart-line"></i><span>Market Overview</span></div>
+                    <div class="nav-item" data-section="watchlist"><i class="fa-regular fa-circle-check"></i><span>Watchlist</span></div>
+                    <div class="nav-item" data-section="news" onclick="window.open('sushreads.html','_blank')"><i class="fa-regular fa-newspaper"></i><span>News & Briefing</span></div>
+                    <div class="nav-item" data-section="journal"><i class="fa-regular fa-note-sticky"></i><span>Trading Journal</span></div>
+                    <div class="nav-item" data-section="performance"><i class="fa-solid fa-chart-column"></i><span>Performance</span></div>
+                    <div class="nav-item" data-section="psychology"><i class="fa-regular fa-face-smile"></i><span>Psychology</span></div>
+                    <div class="nav-item" data-section="mistakes"><i class="fa-solid fa-bug"></i><span>Mistake Detector</span></div>
+                    <div class="nav-item" data-section="intelligence"><i class="fa-regular fa-user"></i><span>Personal Intelligence</span></div>
+                </nav>
+
+                <div class="nav-spacer"></div>
+                <div class="nav-section">
+                    <div class="nav-item" onclick="window.location.href='settings.html'"><i class="fa-solid fa-gear"></i><span>Settings</span></div>
+                    <div class="nav-item" onclick="window.open('v11 my payment page - lifetime-payment page-created.html','_blank')"><i class="fa-regular fa-credit-card"></i><span>Account & Billing</span></div>
+                </div>
+
+                <div class="subscription-card">
+                    <div class="tiny">Subscription</div>
+                    <div class="plan"><span>Basic Plan</span><span class="status-pill">ACTIVE</span></div>
+                    <div class="expiry">Expires on <span>02 Sep 2026</span><br><span style="float:none;color:#7f8da4">(30 days left)</span></div>
+                </div>
+            </aside>
+
+            <main class="main-area">
+                <header class="top-header">
+                    <button class="mobile-menu" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input id="symbolSearch" type="text" placeholder="Search stocks, F&O, indices..." autocomplete="off">
+                    </div>
+                    <div class="header-actions">
+                        <button class="new-analysis" onclick="runDecisionEngine()">＋ New Analysis</button>
+                        <div class="notification"><i class="fa-regular fa-bell"></i><b>3</b></div>
+                        <div class="user-area">
+                            <div class="user-meta"><strong id="userName">Sushant</strong><span class="basic-badge">Basic Plan</span></div>
+                            <div class="user-avatar" id="userAvatar">S</div>
+                            <i class="fa-solid fa-chevron-down" style="font-size:9px;color:#7e8ba0"></i>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="section-heading">
+                    <h2>Market Overview <span>• Live</span></h2>
+                    <div style="font-size:10px;color:#7c8799">03 Aug 2026, 11:45 AM &nbsp; <a>View More →</a></div>
+                </div>
+
+                <div class="market-grid">
+                    <div class="market-card">
+                        <div class="label">NIFTY 50</div><div class="price">24,502.15</div><div class="change up">+137.95 (0.56%)</div>
+                        <div class="sparkline"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><polyline points="0,61 12,50 22,55 32,35 43,42 53,22 62,30 73,12 82,28 94,8 104,19 120,5" fill="none" stroke="#16d895" stroke-width="2"/></svg></div>
+                    </div>
+                    <div class="market-card">
+                        <div class="label">BANK NIFTY</div><div class="price">50,612.45</div><div class="change up">+248.35 (0.49%)</div>
+                        <div class="sparkline"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><polyline points="0,58 12,45 23,50 34,31 43,40 53,20 64,32 73,16 82,25 94,10 104,20 120,4" fill="none" stroke="#16d895" stroke-width="2"/></svg></div>
+                    </div>
+                    <div class="market-card">
+                        <div class="label">SENSEX</div><div class="price">80,451.98</div><div class="change up">+410.19 (0.51%)</div>
+                        <div class="sparkline"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><polyline points="0,58 12,49 23,53 33,34 43,42 55,22 65,29 74,15 84,28 95,9 106,20 120,5" fill="none" stroke="#16d895" stroke-width="2"/></svg></div>
+                    </div>
+                    <div class="market-card">
+                        <div class="label">INDIA VIX</div><div class="price">12.47</div><div class="change down">-0.18 (1.42%)</div>
+                        <div class="sparkline"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><polyline points="0,30 12,18 23,37 33,25 44,45 53,20 65,32 74,13 84,40 96,27 108,48 120,55" fill="none" stroke="#ff5a62" stroke-width="2"/></svg></div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <section class="panel">
+                        <div class="panel-head"><h3>Watchlist</h3><a>Edit</a></div>
+                        <table class="watch-table">
+                            <thead><tr><th>Symbol</th><th>LTP</th><th>Change</th><th>%</th></tr></thead>
+                            <tbody id="watchlistBody">
+                                <tr><td>RELIANCE</td><td>2,978.45</td><td class="up">+28.35</td><td class="up">+0.96%</td></tr>
+                                <tr><td>TCS</td><td>4,150.80</td><td class="up">+12.60</td><td class="up">+0.30%</td></tr>
+                                <tr><td>HDFCBANK</td><td>1,675.20</td><td class="up">+16.80</td><td class="up">+1.01%</td></tr>
+                                <tr><td>INFY</td><td>1,876.90</td><td class="down">-5.40</td><td class="down">-0.29%</td></tr>
+                                <tr><td>ICICIBANK</td><td>1,245.30</td><td class="up">+8.95</td><td class="up">+0.72%</td></tr>
+                                <tr><td>SBIN</td><td>814.70</td><td class="up">+3.60</td><td class="up">+0.44%</td></tr>
+                            </tbody>
+                        </table>
+                        <div class="watch-footer">View Full Watchlist →</div>
+                    </section>
+
+                    <section class="decision-panel">
+                        <div class="decision-head">
+                            <div><h2>Trade Decision Engine</h2><p>Analyze your trade setup before you take the trade.</p></div>
+                            <button class="analyze-btn" onclick="runDecisionEngine()">Analyze New Trade</button>
+                        </div>
+
+                        <div class="decision-body">
+                            <div>
+                                <div class="setup-title">Trade Setup</div>
+                                <div class="setup-row"><span>Instrument</span><span id="engSymbol">RELIANCE</span></div>
+                                <div class="setup-row"><span>Entry Price</span><span id="engEntry">2,975.00</span></div>
+                                <div class="setup-row"><span>Stop Loss</span><span id="engSL" style="color:#ff5a62">2,930.00</span></div>
+                                <div class="setup-row"><span>Target Price</span><span id="engTarget" style="color:#18d994">3,080.00</span></div>
+                                <div class="setup-row"><span>Account Risk</span><span>1.00 %</span></div>
+                                <div class="setup-row"><span>Account Size</span><span>₹ 5,00,000</span></div>
+                            </div>
+
+                            <div class="summary">
+                                <div class="summary-title">Analysis Summary</div>
+                                <div class="summary-content">
+                                    <div class="score-wrap">
+                                        <div class="score-ring" id="scoreWheel"><div class="score-inner"><span class="score-num" id="scoreNum">78</span><span class="score-sub">/100</span></div></div>
+                                        <div class="decision-tag" id="scoreTag">GOOD SETUP</div>
+                                        <div class="decision-copy">Strong probability of success</div>
+                                    </div>
+                                    <div class="metric-list">
+                                        <div class="metric"><span>Risk : Reward</span><strong id="rrVal">2.33 : 1</strong></div>
+                                        <div class="metric"><span>Potential Profit</span><strong class="up" id="potProfit">₹ 10,500</strong></div>
+                                        <div class="metric"><span>Potential Loss</span><strong class="down" id="potLoss">₹ 5,000</strong></div>
+                                        <div class="metric"><span>Position Size</span><strong id="posSize">111 Shares</strong></div>
+                                        <div class="metric"><span>Risk Amount</span><strong>₹ 5,000 (1.00%)</strong></div>
+                                        <div class="metric"><span>Risk Discipline Score</span><strong>82 /100</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="decision-footer" id="decisionFooter">
+                            <div><h4><i class="fa-solid fa-scale-balanced"></i> FINAL DECISION: TRADE</h4><span>High quality setup with good risk management.</span></div>
+                            <i class="fa-solid fa-scale-balanced" style="font-size:28px;color:#28d99d"></i>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="lower-grid">
+                    <section class="panel">
+                        <div class="panel-head"><h3>Quick Insights</h3></div>
+                        <div class="insight-grid">
+                            <div class="insight"><div class="insight-icon"><i class="fa-solid fa-arrow-trend-up"></i></div><small>Best Performing</small><strong>HDFCBANK</strong><em class="up">+1.01%</em></div>
+                            <div class="insight"><div class="insight-icon"><i class="fa-solid fa-arrow-trend-down"></i></div><small>Worst Performing</small><strong>INFY</strong><em class="down">-0.29%</em></div>
+                            <div class="insight"><div class="insight-icon"><i class="fa-solid fa-chart-simple"></i></div><small>High Volume</small><strong>RELIANCE</strong><em>1.24 Cr</em></div>
+                            <div class="insight"><div class="insight-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div><small>Active FII/DII</small><strong>FII Net Buy</strong><em>₹ 842 Cr</em></div>
+                        </div>
+                    </section>
+
+                    <section class="panel performance">
+                        <div class="panel-head" style="padding:0 0 10px"><h3>Performance Overview</h3><a>This Month⌄</a></div>
+                        <div class="performance-body">
+                            <div class="chart-box">
+                                <svg viewBox="0 0 520 180" preserveAspectRatio="none">
+                                    <g stroke="#243653" stroke-width="1">
+                                        <line x1="0" y1="25" x2="520" y2="25"/><line x1="0" y1="70" x2="520" y2="70"/><line x1="0" y1="115" x2="520" y2="115"/><line x1="0" y1="160" x2="520" y2="160"/>
+                                    </g>
+                                    <polyline points="0,135 28,120 55,150 82,112 110,126 138,115 165,105 192,112 220,96 248,102 275,85 302,94 330,78 358,72 385,84 412,60 440,73 468,46 495,57 520,38" fill="none" stroke="#16d895" stroke-width="2.5"/>
+                                    <polyline points="0,135 28,120 55,150 82,112 110,126 138,115 165,105 192,112 220,96 248,102 275,85 302,94 330,78 358,72 385,84 412,60 440,73 468,46 495,57 520,38 520,160 0,160" fill="rgba(22,216,149,.06)" stroke="none"/>
+                                </svg>
+                            </div>
+                            <div class="perf-stats">
+                                <div class="perf-stat"><span>Total P&L</span><strong class="up">₹ 48,750</strong><em>+6.25%</em></div>
+                                <div class="perf-stat"><span>Winning Trades</span><strong>18 (64.28%)</strong></div>
+                                <div class="perf-stat"><span>Profit Factor</span><strong>1.85</strong></div>
+                                <div class="perf-stat"><span>Max Drawdown</span><strong>₹ 12,400 (2.15%)</strong></div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="quote"><span>“ The best traders are not the ones who predict the market, but the ones who prepare for it. ”</span><span class="brand-line">Think before you trade.</span></div>
+            </main>
+
+            <aside class="right-sidebar">
+                <section class="right-card">
+                    <div class="right-head"><h3>Pre-Market Preparation</h3></div>
+                    <div class="prep-wrap">
+                        <div class="prep-ring"><div class="prep-ring-inner">70%</div></div>
+                        <div class="prep-copy">
+                            <div style="color:#e5eaf2;margin-bottom:4px">You are ready for trading!</div>
+                            <div class="done"><i class="fa-regular fa-circle-check"></i> Market Trend</div>
+                            <div class="done"><i class="fa-regular fa-circle-check"></i> News & Events</div>
+                            <div class="done"><i class="fa-regular fa-circle-check"></i> Watchlist Check</div>
+                            <div class="pending"><i class="fa-regular fa-circle"></i> Plan Your Trades</div>
+                        </div>
+                    </div>
+                    <div style="text-align:right;margin-top:7px"><a style="font-size:9px;color:#6f9dff">Continue →</a></div>
+                </section>
+
+                <section class="right-card">
+                    <div class="right-head"><h3>News & Market Briefing</h3><a onclick="window.open('sushreads.html','_blank')">View All</a></div>
+                    <div class="news-item"><div class="news-thumb"><i class="fa-solid fa-building-columns"></i></div><div class="news-content"><span class="source">Indian Markets &nbsp; 2m ago</span><p>Nifty opens higher as IT and banking stocks rally</p><span>●</span></div></div>
+                    <div class="news-item"><div class="news-thumb"><i class="fa-solid fa-landmark"></i></div><div class="news-content"><span class="source">Economy &nbsp; 15m ago</span><p>RBI keeps repo rate unchanged, maintains stance</p><span>●</span></div></div>
+                    <div class="news-item"><div class="news-thumb"><i class="fa-solid fa-globe"></i></div><div class="news-content"><span class="source">Global Markets &nbsp; 32m ago</span><p>US markets rally on tech earnings optimism</p><span>●</span></div></div>
+                    <div class="news-item"><div class="news-thumb"><i class="fa-solid fa-industry"></i></div><div class="news-content"><span class="source">Stocks &nbsp; 45m ago</span><p>Reliance announces new investment in green energy</p><span>●</span></div></div>
+                </section>
+
+                <section class="right-card">
+                    <div class="right-head"><h3>Today's Tasks</h3><a>+ Add Task</a></div>
+                    <label class="task"><input type="checkbox" checked> Analyze NIFTY trend</label>
+                    <label class="task"><input type="checkbox" checked> Review overnight news</label>
+                    <label class="task"><input type="checkbox"> Update watchlist</label>
+                    <label class="task"><input type="checkbox"> Plan 3 trade setups</label>
+                    <label class="task"><input type="checkbox"> Journal before market</label>
+                </section>
+
+                <section class="right-card">
+                    <div class="right-head"><h3>Recent Journal</h3><a>View All</a></div>
+                    <div class="journal-item"><div class="journal-date">02 Aug 2026</div><div class="journal-title"><span>Breakout trade in RELIANCE worked well.</span><span class="journal-pnl">+ ₹ 6,250</span></div></div>
+                    <div class="journal-item"><div class="journal-date">01 Aug 2026</div><div class="journal-title"><span>Waited for confirmation before entry.</span><span class="journal-pnl">+ ₹ 3,840</span></div></div>
+                </section>
+            </aside>
+        </div>
+    </div>
+
+
+    <!-- ============================================================
+    JAVASCRIPT ENGINE (Supabase + Decision Logic)
+    ============================================================ -->
+    <script>
+        
+/* ==========================================================
+   TDT FINAL AUTH + TRIAL ENGINE
+   One authentication system only: Supabase Auth.
+========================================================== */
+const SUPABASE_URL = "https://bobrrkiqldubxwafiiha.supabase.co";
+const SUPABASE_KEY = "sb_publishable_GO6ADQ1ZlQiuCkU4Emg21g_eTw9KSZF";
+let supabaseClient = null;
+let currentUser = null;
+
+function initSupabase(){
+  if(window.supabase?.createClient){
+    supabaseClient = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    return true;
+  }
+  return false;
+}
+function authMsg(text, ok=false){
+  const el=document.getElementById("supaResult");
+  if(el){el.textContent=text;el.className="tw-auth-result "+(ok?"tw-auth-ok":"tw-auth-error");}
+}
+function setAuthView(view){
+  const confirmation=document.getElementById("twEmailConfirmation");
+  if(confirmation) confirmation.style.display="none";
+  const forgotConfirmation=document.getElementById("twForgotConfirmation");
+  if(forgotConfirmation) forgotConfirmation.style.display="none";
+  const result=document.getElementById("supaResult");
+  if(result) result.style.display="block";
+  document.querySelectorAll(".tw-auth-tab").forEach(b=>b.classList.toggle("active",b.dataset.authView===view));
+  ["twLoginForm","twRegisterForm","twForgotForm","twResetForm"].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.display="none";
+  });
+  const map={login:"twLoginForm",register:"twRegisterForm",forgot:"twForgotForm",reset:"twResetForm"};
+  document.getElementById(map[view]).style.display="flex";
+  document.getElementById("twAuthSubtitle").textContent =
+    view==="register" ? "Start your 3-day free trial." :
+    view==="forgot" ? "Reset your TDT password." :
+    view==="reset" ? "Create a new password." : "Think before you trade.";
+  authMsg("");
+}
+function campaignInfo(){
+  const p=new URLSearchParams(location.search);
+  return {
+    source:p.get("utm_source")||p.get("source")||"direct",
+    campaign:p.get("utm_campaign")||p.get("campaign")||"organic",
+    medium:p.get("utm_medium")||"unknown"
+  };
+}
+function visitorId(){
+  let id=localStorage.getItem("tw_visitor_id");
+  if(!id){id="visitor_"+crypto.randomUUID();localStorage.setItem("tw_visitor_id",id);}
+  return id;
+}
+async function trackEvent(event,metadata={}){
+  const payload={visitor_id:visitorId(),user_id:currentUser?.id||null,event,metadata};
+  try{
+    await supabaseClient.from("activity_events").insert(payload);
+  }catch(e){}
+}
+async function ensureTrial(user){
+  // Existing paid/active subscription always wins.
+  const {data:sub}=await supabaseClient.from("subscriptions")
+    .select("*").eq("user_id",user.id).maybeSingle();
+  if(sub?.status==="active" && sub?.expires_at && new Date(sub.expires_at)>new Date()){
+    return {allowed:true, type:"PAID", subscription:sub};
+  }
+
+  // Existing trial.
+  if(sub?.status==="trial" && sub?.expires_at){
+    const active=new Date(sub.expires_at)>new Date();
+    return {allowed:active,type:active?"TRIAL":"EXPIRED",subscription:sub};
+  }
+
+  // Create the 3-day trial for a newly registered user.
+  const now=new Date();
+  const expires=new Date(now.getTime()+3*86400000);
+  const row={
+    user_id:user.id,
+    status:"trial",
+    plan:"basic",
+    starts_at:now.toISOString(),
+    expires_at:expires.toISOString()
+  };
+  const {data,error}=await supabaseClient.from("subscriptions").upsert(row,{onConflict:"user_id"}).select().maybeSingle();
+  if(error){
+    // If the account has no subscription row yet, allow the trial in session
+    // and report the DB setup issue rather than creating a second login.
+    return {allowed:true,type:"TRIAL_LOCAL",subscription:row,warning:error.message};
+  }
+  return {allowed:true,type:"TRIAL",subscription:data||row};
+}
+async function unlockDashboard(user){
+  const access=await ensureTrial(user);
+  if(!access.allowed){
+    await supabaseClient.auth.signOut();
+    authMsg("Your trial/subscription has expired. Please subscribe to continue.");
+    return false;
+  }
+  currentUser=user;
+  document.getElementById("loginWrapper").style.display="none";
+  document.getElementById("dashboardWrapper").style.display="flex";
+  const name=user.user_metadata?.full_name || user.email.split("@")[0];
+  document.getElementById("userName").textContent=name;
+  document.getElementById("userAvatar").textContent=name.charAt(0).toUpperCase();
+  await trackEvent("LOGIN_SUCCESS",{access_type:access.type});
+  return true;
+}
+async function handleLogin(e){
+  e?.preventDefault();
+  if(!supabaseClient) initSupabase();
+  const email=document.getElementById("supaEmail").value.trim();
+  const password=document.getElementById("supaPassword").value;
+  if(!email||!password)return authMsg("Please enter email and password.");
+  authMsg("Verifying credentials...",true);
+  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error)return authMsg(error.message);
+  await unlockDashboard(data.user);
+}
+function showEmailConfirmation(email){
+  document.querySelectorAll(".tw-auth-tab").forEach(b=>b.classList.remove("active"));
+  ["twLoginForm","twRegisterForm","twForgotForm","twResetForm"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display="none";
+  });
+  const subtitle=document.getElementById("twAuthSubtitle");
+  if(subtitle) subtitle.textContent="Your account is almost ready.";
+  const emailEl=document.getElementById("twConfirmationEmail");
+  if(emailEl) emailEl.textContent=email;
+  const confirmation=document.getElementById("twEmailConfirmation");
+  if(confirmation) confirmation.style.display="block";
+  const result=document.getElementById("supaResult");
+  if(result){result.textContent="";result.className="tw-auth-result";result.style.display="none";}
+  const box=document.querySelector(".tw-auth-box");
+  if(box) box.scrollTop=0;
+}
+
+async function handleRegister(e){
+  e.preventDefault();
+  if(!supabaseClient) initSupabase();
+  const name=document.getElementById("twRegName").value.trim();
+  const email=document.getElementById("twRegEmail").value.trim().toLowerCase();
+  const p1=document.getElementById("twRegPassword").value;
+  const p2=document.getElementById("twRegPassword2").value;
+  if(p1!==p2)return authMsg("Passwords do not match.");
+  if(p1.length<6)return authMsg("Password must contain at least 6 characters.");
+  authMsg("Creating your TDT account...",true);
+  const {data,error}=await supabaseClient.auth.signUp({
+    email,password:p1,
+    options:{data:{full_name:name}}
+  });
+  if(error)return authMsg(error.message);
+  const c=campaignInfo();
+  try{
+    await supabaseClient.from("leads").upsert({
+      visitor_id:visitorId(),user_id:data.user?.id||null,name,email,
+      source:c.source,campaign:c.campaign,medium:c.medium,
+      first_visit:new Date().toISOString(),status:"TRIAL"
+    },{onConflict:"email"});
+  }catch(e){}
+  if(data.session){
+    await unlockDashboard(data.user);
+  }else{
+    showEmailConfirmation(email);
+  }
+}
+function showForgotConfirmation(email){
+  document.querySelectorAll(".tw-auth-tab").forEach(b=>b.classList.remove("active"));
+  ["twLoginForm","twRegisterForm","twForgotForm","twResetForm"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display="none";
+  });
+  const subtitle=document.getElementById("twAuthSubtitle");
+  if(subtitle) subtitle.textContent="Password reset instructions are on their way.";
+  const emailEl=document.getElementById("twForgotConfirmationEmail");
+  if(emailEl) emailEl.textContent=email;
+  const confirmation=document.getElementById("twForgotConfirmation");
+  if(confirmation) confirmation.style.display="block";
+  const result=document.getElementById("supaResult");
+  if(result){result.textContent="";result.className="tw-auth-result";result.style.display="none";}
+}
+
+async function handleForgot(e){
+  e.preventDefault();
+  if(!supabaseClient) initSupabase();
+  const email=document.getElementById("twForgotEmail").value.trim().toLowerCase();
+  if(!email)return authMsg("Enter your email address.");
+  const btn=document.getElementById("twSendResetBtn");
+  if(btn){btn.disabled=true;btn.textContent="Sending Reset Link...";}
+  const redirect=location.origin+location.pathname;
+  const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:redirect});
+  if(btn){btn.disabled=false;btn.textContent="Send Reset Link";}
+  if(error)return authMsg(error.message);
+  await trackEvent("PASSWORD_RESET_REQUESTED",{email});
+  showForgotConfirmation(email);
+}
+async function handleReset(e){
+  e.preventDefault();
+  const p1=document.getElementById("twNewPassword").value;
+  const p2=document.getElementById("twNewPassword2").value;
+  if(p1!==p2)return authMsg("Passwords do not match.");
+  const {error}=await supabaseClient.auth.updateUser({password:p1});
+  if(error)return authMsg(error.message);
+  authMsg("Password updated successfully. You can now log in.",true);
+  await supabaseClient.auth.signOut();
+  setAuthView("login");
+}
+async function handleLogout(){
+  await trackEvent("LOGOUT");
+  if(supabaseClient)await supabaseClient.auth.signOut();
+  currentUser=null;
+  document.getElementById("dashboardWrapper").style.display="none";
+  document.getElementById("loginWrapper").style.display="flex";
+  setAuthView("login");
+  authMsg("Logged out.",true);
+}
+document.addEventListener("DOMContentLoaded",async function(){
+  initSupabase();
+  document.querySelectorAll(".tw-auth-tab").forEach(b=>b.addEventListener("click",()=>setAuthView(b.dataset.authView)));
+  document.getElementById("twLoginForm").addEventListener("submit",handleLogin);
+  document.getElementById("twRegisterForm").addEventListener("submit",handleRegister);
+  document.getElementById("twForgotForm").addEventListener("submit",handleForgot);
+  document.getElementById("twResetForm").addEventListener("submit",handleReset);
+  document.getElementById("twForgotBtn").addEventListener("click",()=>{
+    document.getElementById("twForgotEmail").value=document.getElementById("supaEmail")?.value.trim()||"";
+    setAuthView("forgot");
+  });
+  document.getElementById("twForgotOpenLoginBtn").addEventListener("click",()=>setAuthView("login"));
+  document.getElementById("twOpenLoginBtn").addEventListener("click",()=>{
+    setAuthView("login");
+    const email=document.getElementById("twConfirmationEmail")?.textContent||"";
+    const loginEmail=document.getElementById("supaEmail");
+    if(loginEmail && email) loginEmail.value=email;
+    authMsg("Email confirmation required. Once confirmed, log in to start your 3-day free trial.",true);
+  });
+  document.querySelector("[data-back-login]").addEventListener("click",()=>setAuthView("login"));
+
+  const {data:{session}}=await supabaseClient.auth.getSession();
+  if(session){
+    await unlockDashboard(session.user);
+  }else{
+    document.getElementById("loginWrapper").style.display="flex";
+  }
+
+  supabaseClient.auth.onAuthStateChange((event,session)=>{
+    if(event==="PASSWORD_RECOVERY") setAuthView("reset");
+  });
+
+  const mBtn=document.getElementById("mobileMenuBtn");
+  if(mBtn){
+    if(window.innerWidth<=800)mBtn.style.display="block";
+    mBtn.addEventListener("click",()=>document.getElementById("leftSidebar").classList.toggle("open"));
+  }
+});
+
+
+        /* ---------------- DECISION ENGINE LOGIC (JPG Feature) ---------------- */
+        function formatCurrency(val) { return '₹ ' + Number(val).toLocaleString('en-IN'); }
+
+        window.runDecisionEngine = function() {
+            // Parse inputs
+            const entry = parseFloat(document.getElementById('engEntry').textContent.replace(/,/g, ''));
+            const sl = parseFloat(document.getElementById('engSL').textContent.replace(/,/g, ''));
+            const target = parseFloat(document.getElementById('engTarget').textContent.replace(/,/g, ''));
+            
+            // Calculate
+            const risk = entry - sl;
+            const reward = target - entry;
+            const rr = (reward / risk);
+            const posSize = Math.floor(5000 / risk); // based on 1% of 5L
+            const pProfit = posSize * reward;
+            const pLoss = posSize * risk;
+
+            // Random Score (78 -> 95 or 50)
+            let score = 78;
+            let tag = "GOOD SETUP";
+            let color = "#10b981";
+            let footerMsg = "High quality setup with good risk management.";
+            
+            if(rr > 2.5) {
+                score = Math.floor(Math.random() * 10) + 85;
+                tag = "EXCELLENT SETUP";
+                footerMsg = "Exceptional risk-to-reward ratio.";
+            } else if(rr < 1.5) {
+                score = Math.floor(Math.random() * 10) + 40;
+                tag = "POOR SETUP";
+                color = "#ef4444";
+                footerMsg = "Risk is too high compared to reward.";
+            }
+
+            // Update Visuals
+            document.getElementById('scoreNum').textContent = score;
+            document.getElementById('scoreWheel').style.background = `conic-gradient(${color} 0% ${score}%, var(--sub) ${score}% 100%)`;
+            document.getElementById('scoreTag').textContent = tag;
+            document.getElementById('scoreTag').style.color = color;
+            
+            document.getElementById('rrVal').textContent = rr.toFixed(2) + ' : 1';
+            document.getElementById('potProfit').textContent = formatCurrency(pProfit);
+            document.getElementById('potLoss').textContent = formatCurrency(pLoss);
+            document.getElementById('posSize').textContent = posSize + ' Shares';
+
+            // Footer
+            const footer = document.getElementById('decisionFooter');
+            footer.style.background = `rgba(${color === '#10b981' ? '16,185,129' : '239,68,68'}, 0.08)`;
+            footer.style.borderColor = color + '33';
+            footer.querySelector('h4').style.color = color;
+            footer.querySelector('h4').innerHTML = `<i class="fa-solid fa-scale-balanced"></i> FINAL DECISION: ${tag === 'POOR SETUP' ? 'AVOID' : 'TRADE'}`;
+            footer.querySelector('span').textContent = footerMsg;
+        };
+
+
+        /* ---------------- TDT COMMAND CENTER UI ---------------- */
+        const localSymbols = [
+            ["RELIANCE","2,978.45","+28.35","+0.96%"],
+            ["TCS","4,150.80","+12.60","+0.30%"],
+            ["HDFCBANK","1,675.20","+16.80","+1.01%"],
+            ["INFY","1,876.90","-5.40","-0.29%"],
+            ["ICICIBANK","1,245.30","+8.95","+0.72%"],
+            ["SBIN","814.70","+3.60","+0.44%"],
+            ["ITC","455.30","+2.10","+0.46%"],
+            ["LT","3,842.10","-11.20","-0.29%"],
+            ["AXISBANK","1,168.20","+7.30","+0.63%"],
+            ["MARUTI","13,120.00","+64.50","+0.49%"]
+        ];
+
+        function renderSymbolSearch(query){
+            const q = String(query || "").trim().toUpperCase();
+            if(!q) return;
+            const matches = localSymbols.filter(x => x[0].includes(q)).slice(0,6);
+            const body = document.getElementById("watchlistBody");
+            if(!body || !matches.length) return;
+            body.innerHTML = matches.map(x => `
+                <tr>
+                    <td>${x[0]}</td><td>${x[1]}</td>
+                    <td class="${x[2].startsWith("-") ? "down":"up"}">${x[2]}</td>
+                    <td class="${x[3].startsWith("-") ? "down":"up"}">${x[3]}</td>
+                </tr>
+            `).join("");
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const search = document.getElementById("symbolSearch");
+            if(search){
+                search.addEventListener("input", e => renderSymbolSearch(e.target.value));
+                search.addEventListener("keydown", e => {
+                    if(e.key === "Escape"){
+                        e.target.value = "";
+                        location.reload();
+                    }
+                });
+            }
+
+            document.querySelectorAll(".nav-item[data-section]").forEach(item => {
+                item.addEventListener("click", () => {
+                    document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+                    item.classList.add("active");
+                    if(window.innerWidth <= 900) document.getElementById("leftSidebar").classList.remove("open");
+                    const section = item.dataset.section;
+                    if(section === "settings") window.location.href = "settings.html";
+                });
+            });
+        });
+
+        // Initial load
+        setTimeout(runDecisionEngine, 500);
+    </script>
+
+
+
+</body>
+</html>
